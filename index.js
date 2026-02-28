@@ -1,52 +1,213 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import Cookies from 'js-cookies'
+import Header from '../Header';
 
-const AboutContainer = styled.div`
-  background-color: #f7f7f7;
-  padding: 40px 0;
+const FormContainer = styled.div`
+  text-align: start;
+  width: 600px;
+  margin: 12vh auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  
+  @media screen and (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
+
+const FormHeader = styled.h2`
+  font-size: 1.5rem;
   text-align: center;
 `;
 
-const Heading = styled.h2`
-  font-size: 24px;
-  color: #333;
+const FormGroup = styled.div`
   margin-bottom: 20px;
 `;
 
-const Paragraph = styled.p`
-  font-size: 16px;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 20px;
+const Label = styled.label`
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
 `;
 
-const About = () => {
+const Input = styled.input`
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
+const Button = styled.button`
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+
+const Checkout = () => {
+    const [formData, setFormData] = useState({
+        firstname: '',
+        lastname: '',
+        phone: '',
+        quantity: '',
+        paymentMethod: 'cod',
+        address: '',
+    });
+    const [productDetails, setProductDetails] = useState({})
+
+    const { id } = useParams();
+
+    useEffect(() => {
+        // Fetch product data using Axios
+        axios.get(`http://localhost:5100/products/${id}`)
+            .then((response) => {
+                // Assuming that response.data contains the product information
+                const productData = response.data;
+
+                // Update the component state with the received product data
+                setProductDetails({
+                    ...formData,
+                    // Assuming that you have fields like name, price, etc. in your product data
+                    productName: productData.productname,
+                    price: productData.price,
+                    // Include other fields as needed
+                });
+            })
+            .catch((error) => {
+                console.error('Error fetching product data:', error);
+            });
+    }, [id]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const userId = Cookies.getItem('userId')
+        const price = productDetails.price;
+        const productname = productDetails.productname;
+        const formDetails = { ...formData, user: userId, productId: id, price, productname }
+
+        try {
+            const response = await axios.post('http://localhost:5100/orders', formDetails);
+            alert('Order created',response);
+            setFormData({
+                firstname: '',
+                lastname: '',
+                phone: '',
+                paymentMethod: '', // You can set this to an empty string or a default value
+                address: '',
+              });
+            // Reset the form or perform other actions upon success
+        } catch (error) {
+            console.error('Error creating order:', error);
+        }
+    };
+
     return (
-        <AboutContainer>
-            <div className='container shadow p-4'>
-                <Heading>About Us</Heading>
-                <Paragraph>
-                    Welcome to GroceryMart - your one-stop destination for fresh and
-                    quality groceries. We are dedicated to providing you with the finest
-                    selection of products to make your shopping experience convenient and
-                    enjoyable.
-                </Paragraph>
-                <Paragraph>
-                    Our journey began in 2005, and since then, we've been committed to
-                    serving our customers with the freshest produce, pantry essentials,
-                    and more. With a passion for quality and customer satisfaction, we
-                    ensure that every item you find on our shelves meets the highest
-                    standards.
-                </Paragraph>
-                <Paragraph>
-                    Whether you're looking for everyday groceries, special ingredients for
-                    your favorite recipes, or unique items for a special occasion, we've
-                    got you covered. Shop with us and experience the joy of quality
-                    groceries at your doorstep.
-                </Paragraph>
-            </div>
-        </AboutContainer>
+       <div>
+        <Header/>
+         <FormContainer>
+            <FormHeader>Order Details</FormHeader>
+            <form onSubmit={handleSubmit}>
+                <FormGroup>
+                    <Label>First Name:</Label>
+                    <Input
+                        type="text"
+                        name="firstname"
+                        placeholder="Enter your first name"
+                        value={formData.firstname}
+                        onChange={handleChange}
+                        required
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label>Last Name:</Label>
+                    <Input
+                        type="text"
+                        name="lastname"
+                        placeholder="Enter your last name"
+                        value={formData.lastname}
+                        onChange={handleChange}
+                        required
+                    />
+                </FormGroup>
+
+                <FormGroup>
+                    <Label>Phone:</Label>
+                    <Input
+                        type="number"
+                        name="phone"
+                        placeholder="Enter your phone number"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                    />
+                </FormGroup>
+
+                <FormGroup>
+                    <Label>Quantity:</Label>
+                    <Input
+                        type="text"
+                        name="quantity"
+                        placeholder="Enter the quantity"
+                        value={formData.quantity}
+                        onChange={handleChange}
+                    />
+                </FormGroup>
+
+                <FormGroup>
+                    <Label>Address:</Label>
+                    <textarea
+                        type="text"
+                        rows={5}
+                        style={{ width: '100%',border:"1px solid grey " }}
+                        name="address"
+                        placeholder="Enter your address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        required
+                    />
+                </FormGroup>
+
+                <FormGroup>
+                    <Label>Payment Method:</Label>
+                    <Select
+                        name="paymentMethod"
+                        value={formData.paymentMethod}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value="cod">Cash on Delivery (COD)</option>
+                        <option value="credit">Credit Card</option>
+                        <option value="debit">Debit Card</option>
+                    </Select>
+                </FormGroup>
+
+
+                <Button type="submit">Submit</Button>
+            </form>
+        </FormContainer>
+       </div>
     );
 };
 
-export default About;
+export default Checkout;
