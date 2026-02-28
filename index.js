@@ -1,45 +1,79 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
-import Cookies from 'js-cookies'
-import {
-  ProductContainer,
-  ProductName,
-  ProductDescription,
-  ProductPrice,
-  ProductImage,
-  Button,
-  ButtonContainer,
-} from "./styledComponents";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components'; 
+import ProductItem from '../ProductItem';
+import Cookies from 'js-cookies';
+import axios from 'axios';
+import AdminNavabar from '../AdminNavbar';
+
+const ProductsContainer = styled.div`
+  margin-top: 4vh;
+  padding: 20px;
+  text-align: start;
+`;
+
+const Heading = styled.h2`
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  margin-top: 40px;
+  text-align: center;
+`;
+
+const StyledList = styled.ul`
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); // Display 4 items in each row
+  gap: 20px;
+  padding: 0;
+`;
 
 
-const AdminProductItem = ({ id, name, description, price, img ,handleDeleteProduct}) => {
+const AdminProducts = () => {
+  const api = 'http://localhost:5100/products';
+  const [products, setProducts] = useState([]);
 
-  const handleDelete = async () => {
-    handleDeleteProduct(id)
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const getData = () => {
+    fetch(api)
+      .then(response => response.json())
+      .then(data => setProducts(data))
+      .catch(error => console.error('Error fetching products:', error));
+  };
+
+  const handleDeleteProduct = async (id) => {
+    const userId = Cookies.getItem("userId"); 
+    try {
+      await axios.delete(`http://localhost:5100/products/${id}`);
+      getData();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
   };
 
   return (
-   <div>
-     <ProductContainer>
-      <ProductImage src={img} alt={name} />
-      <ProductName>{name}</ProductName>
-      <ProductPrice>${price}</ProductPrice>
-      <ButtonContainer>
-        <Link to={`/admin/product-update/${id}`}  className='btn btn-primary'>Update</Link>
-        <Button onClick={handleDelete} className='btn btn-danger' >Delete</Button>
-      </ButtonContainer>
-      {/* <div>
-        <label>Quantity: </label>
-        <input
-          type="number"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
-      </div> */}
-    </ProductContainer>
-   </div>
+    <div>
+      <AdminNavabar />
+      <h1 className='text-center'>Products</h1>
+      <ProductsContainer>
+        <StyledList>
+          {products.map(product => (
+            <ProductItem
+              key={product._id}
+              id={product._id}
+              img={product.image}
+              name={product.productname}
+              description={product.description}
+              price={product.price}
+              handleDeleteProduct={handleDeleteProduct}
+            />
+          ))}
+        </StyledList>
+      </ProductsContainer>
+    </div>
   );
 };
 
-export default AdminProductItem;
+export default AdminProducts;
