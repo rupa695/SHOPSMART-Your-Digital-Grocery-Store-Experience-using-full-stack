@@ -1,34 +1,32 @@
 import styled from 'styled-components';
 
-export const AboutContainer = styled.div`
-  margin: 20px;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+export const FooterContainer = styled.footer`
+  background-color: #333;
+  color: #fff;
+  padding: 20px 0;
 `;
 
-export const Title = styled.h2`
-  color: #333;
+export const FooterContent = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
 `;
 
-export const Paragraph = styled.p`
-  color: #555;
-  margin-bottom: 10px;
+export const FooterText = styled.p`
+  font-size: 14px;
+  margin: 0;
 `;
 
-export const List = styled.ul`
-  list-style: disc;
-  margin-left: 20px;
+export const FooterLinks = styled.div`
+  margin-top: 10px;
 `;
 
-export const ListItem = styled.li`
-  margin-bottom: 5px;
-`;
+export const FooterLink = styled.a`
+  color: #fff;
+  margin: 0 10px;
+  text-decoration: none;
 
-export const ContactInfo = styled.p`
-  margin-top: 20px;
-  font-style: italic;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
-
