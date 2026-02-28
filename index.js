@@ -1,201 +1,89 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Form, Button, Card } from 'react-bootstrap';
-import { Link, useNavigate, } from 'react-router-dom';
-import Cookies from 'js-cookies'
-import Header from '../Header';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Cookies from "js-cookies";
+import Header from "../Header";
+import { Link } from "react-router-dom";
+import {
+  ProductContainer,
+  ProductName,
+  ProductDescription,
+  ProductPrice,
+  ProductImage,
+  Button,
+  ButtonContainer,
+} from "../ProductItem/styledComponents";
 
-const commonFields = [
-    { controlId: 'email', label: 'Email', type: 'email' },
-    { controlId: 'password', label: 'Password', type: 'password' },
-];
 
-const Login = () => {
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
+const MyCart = () => {
+  const userId = Cookies.getItem("userId");
+  const [cartData, setCartData] = useState([]);
 
-    const navigate = useNavigate();
-    const token = Cookies.getItem('jwtToken');
-    const adminToken = localStorage.getItem('adminJwtToken');
+  useEffect(() => {
+    getProductsList();
+  }, []);
 
-    useEffect(() => {
-        console.log(adminToken)
-        if (token) {
-            navigate('/'); // Redirect to home if token exists
-        } else if (adminToken) {
-            navigate('/admin/all-products'); // Redirect to admin if an admin token exists
-        }
-    }, [navigate]);
+  const getProductsList = () => {
+    axios
+      .get(`http://localhost:5100/cart/${userId}`)
+      .then((response) => {
+        setCartData(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching cart items:", error);
+      });
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await fetch('http://localhost:5100/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+  const handleCancelClick = (productId) => {
+    axios
+      .delete(`http://localhost:5100/remove-from-cart/${productId}`)
+      .then((response) => {
+        setCartData((prevCartData) =>
+          prevCartData.filter((item) => item.productId !== productId)
+        );
+        getProductsList();
+      })
+      .catch((error) => {
+        console.error("Error removing product from cart:", error);
+      });
+  };
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.token) {
-                    Cookies.setItem('jwtToken', data.token, { expires: 30 });
-                    Cookies.setItem('userId', data.user._id);
-                    Cookies.setItem('userName', data.user.firstname);
-                    navigate('/');
-                    alert('login Successfull')
-                } else if (data.jwtToken) {
-                    localStorage.setItem('adminJwtToken', data.jwtToken, { expires: 30 });
-                    Cookies.setItem('userName', data.user.firstname);
-                    navigate('/admin/dashboard');
-                }
-            } else {
-                alert("Email or Password didn't match");
-            }
-        } catch (error) {
-            alert('Error during login:', error);
-        }
-    };
+  return (
+    <div>
+      <Header />
+      <br/>
+      <br/>
+      <h1 className="text-3xl font-semibold mt-8">My Cart</h1>
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
-    };
-
-    return (
-<div>
-    <Header/>
-<Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh', paddingTop: '10vh' }}>
-            <Card className="shadow p-4" style={{ width: '400px' }}>
-                <Card.Body>
-                    <h2 className="mb-4">Login</h2>
-                    <Form onSubmit={handleSubmit}>
-                        {commonFields.map((field) => (
-                            <Form.Group style={{ textAlign: 'start', marginBottom: '10px' }} controlId={field.controlId} key={field.controlId}>
-                                <Form.Label>{field.label}</Form.Label>
-                                <Form.Control
-                                    type={field.type}
-                                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                                    name={field.controlId}
-                                    value={formData[field.controlId]}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </Form.Group>
-                        ))}
-                        <Button type="submit" className="btn-primary w-100 mt-3">Login</Button>
-                    </Form>
-                    <p >
-                        Don't have an account? <Link to="/signup">Sign Up</Link>
-                    </p>
-                </Card.Body>
-            </Card>
-        </Container>
-</div>
-    );
+      <div className="container mx-auto px-4 my-4" >
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {cartData.map((product) => (
+            <ProductContainer key={product._id} >
+              <ProductImage src={product.image} alt={product.productname} />
+              <div className="p-4">
+                <ProductName className="text-xl font-semibold mb-2">{product.productname}</ProductName>
+                <p className="text-gray-700">${product.price}</p>
+                <div className="mt-4 flex justify-between">
+                  <button
+                    onClick={() => handleCancelClick(product._id)}
+                    className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                  >
+                    Remove from Cart
+                  </button>
+                  <Link
+                    to={`/order-details/${product._id}`}
+                    className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Buy this
+                  </Link>
+                </div>
+              </div>
+            </ProductContainer>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 };
 
-export default Login;
-
-
-
-
-// import React, { useEffect, useState } from 'react';
-// import { Container, Form, Button, Card } from 'react-bootstrap';
-// import { Link, useNavigate } from 'react-router-dom';
-// import Cookies from 'js-cookie';
-
-// const commonFields = [
-//     { controlId: 'email', label: 'Email', type: 'email' },
-//     { controlId: 'password', label: 'Password', type: 'password' },
-// ];
-
-// const Login = () => {
-//     const [formData, setFormData] = useState({
-//         email: '',
-//         password: '',
-//     });
-
-//     const navigate = useNavigate();
-
-//     useEffect(() => {
-//         const token = Cookies.getItem('jwtToken');
-//         const adminToken = Cookies.getItem('adminJwtToken');
-//         if (token !== null) {
-//             navigate('/'); // Redirect to home if a user token exists
-        // } else if (adminToken !== null) {
-        //     navigate('/admin/all-products'); // Redirect to admin if an admin token exists
-        // }
-//     }, [navigate]);
-
-//     const handleSubmit = async (e) => {
-//         e.preventDefault();
-//         try {
-//             const response = await fetch('http://localhost:5100/login', {
-//                 method: 'POST',
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//                 body: JSON.stringify(formData),
-//             });
-
-//             if (response.ok) {
-//                 const data = await response.json();
-
-                // if (data.token) {
-                //     Cookies.setItem('jwtToken', data.token, { expires: 30 });
-                //     Cookies.setItem('userId', data.user._id);
-                //     Cookies.setItem('userName', data.user.firstname);
-                //     navigate('/');
-                // } else if (data.jwtToken) {
-                //     Cookies.setItem('adminJwtToken', data.jwtToken, { expires: 30 });
-                //     Cookies.setItem('userName', data.user.firstname);
-                //     navigate('/admin/all-products');
-                // }
-//             } else {
-//                 alert("Email or Password didn't match");
-//             }
-//         } catch (error) {
-//             alert('Error during login: ' + error); // Corrected alert message
-//         }
-//     };
-
-//     const handleInputChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData((prevData) => ({ ...prevData, [name]: value }));
-//     };
-
-//     return (
-//         <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh', paddingTop: '10vh' }}>
-//             <Card className="shadow p-4" style={{ width: '400px' }}>
-//                 <Card.Body>
-//                     <h2 className="mb-4">Login</h2>
-//                     <Form onSubmit={handleSubmit}>
-//                         {commonFields.map((field) => (
-//                             <Form.Group style={{ textAlign: 'start', marginBottom: '10px' }} controlId={field.controlId} key={field.controlId}>
-//                                 <Form.Label>{field.label}</Form.Label>
-//                                 <Form.Control
-//                                     type={field.type}
-//                                     placeholder={`Enter ${field.label.toLowerCase()}`}
-//                                     name={field.controlId}
-//                                     value={formData[field.controlId]}
-//                                     onChange={handleInputChange}
-//                                     required
-//                                 />
-//                             </Form.Group>
-//                         ))}
-//                         <Button type="submit" className="btn-primary w-100 mt-3">Login</Button>
-//                     </Form>
-//                     <p>
-//                         Don't have an account? <Link to="/signup">Sign Up</Link>
-//                     </p>
-//                 </Card.Body>
-//             </Card>
-//         </Container>
-//     );
-// };
-
-// export default Login;
+export default MyCart;
