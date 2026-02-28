@@ -1,89 +1,75 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import Cookies from "js-cookies";
-import Header from "../Header";
-import { Link } from "react-router-dom";
-import {
-  ProductContainer,
-  ProductName,
-  ProductDescription,
-  ProductPrice,
-  ProductImage,
-  Button,
-  ButtonContainer,
-} from "../ProductItem/styledComponents";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookies';
+import styled from 'styled-components';
+import Header from '../Header';
 
+// Styled components
+const Container = styled.div`
+  padding: 20px;
+  margin-top: 10vh;
+  text-align: start;
+`;
 
-const MyCart = () => {
-  const userId = Cookies.getItem("userId");
-  const [cartData, setCartData] = useState([]);
+const Heading = styled.h2`
+  font-size: 24px;
+  margin-bottom: 16px;
+`;
+
+const OrderList = styled.ul`
+  list-style: none;
+  padding: 0;
+`;
+
+const OrderItem = styled.li`
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin-bottom: 16px;
+`;
+
+const Strong = styled.strong`
+  font-weight: bold;
+`;
+
+const MyOrders = () => {
+  const userId = Cookies.getItem('userId');
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    getProductsList();
-  }, []);
-
-  const getProductsList = () => {
     axios
-      .get(`http://localhost:5100/cart/${userId}`)
+      .get(`http://localhost:5100/my-orders/${userId}`)
       .then((response) => {
-        setCartData(response.data);
-        console.log(response.data);
+        // Assuming response.data is an array of orders
+        setOrders(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching cart items:", error);
+        console.error('Error fetching orders:', error);
       });
-  };
-
-  const handleCancelClick = (productId) => {
-    axios
-      .delete(`http://localhost:5100/remove-from-cart/${productId}`)
-      .then((response) => {
-        setCartData((prevCartData) =>
-          prevCartData.filter((item) => item.productId !== productId)
-        );
-        getProductsList();
-      })
-      .catch((error) => {
-        console.error("Error removing product from cart:", error);
-      });
-  };
+  }, [userId]); // Include userId in the dependency array to re-fetch orders when it changes
 
   return (
     <div>
-      <Header />
-      <br/>
-      <br/>
-      <h1 className="text-3xl font-semibold mt-8">My Cart</h1>
-
-      <div className="container mx-auto px-4 my-4" >
-        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {cartData.map((product) => (
-            <ProductContainer key={product._id} >
-              <ProductImage src={product.image} alt={product.productname} />
-              <div className="p-4">
-                <ProductName className="text-xl font-semibold mb-2">{product.productname}</ProductName>
-                <p className="text-gray-700">${product.price}</p>
-                <div className="mt-4 flex justify-between">
-                  <button
-                    onClick={() => handleCancelClick(product._id)}
-                    className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                  >
-                    Remove from Cart
-                  </button>
-                  <Link
-                    to={`/order-details/${product._id}`}
-                    className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                  >
-                    Buy this
-                  </Link>
-                </div>
-              </div>
-            </ProductContainer>
-          ))}
-        </ul>
-      </div>
+      <Header/>
+      <Container>
+      <h1 className='text-center'>My Orders</h1>
+      <OrderList>
+        {orders.map((order) =>
+          order.status !== 'Delivered' ? (
+            <OrderItem key={order._id}>
+              <Strong>Order ID:</Strong> {order._id} <br />
+              <Strong>Name:</Strong> {order.firstname} {order.lastname} <br />
+              <Strong>Phone:</Strong> {order.phone} <br />
+              <Strong>Date:</Strong> {order.createdAt} <br />
+              <Strong>Price:</Strong> {order.price} <br />
+              <Strong>Status:</Strong> {order.status} <br />
+              <Strong>Payment Method:</Strong> {order.paymentMethod} <br />
+            </OrderItem>
+          ) : null
+        )}
+      </OrderList>
+    </Container>
     </div>
   );
 };
 
-export default MyCart;
+export default MyOrders;
