@@ -1,93 +1,52 @@
-import React, { useState } from 'react';
-import { Container, Form, Button, Card } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
-import Header from '../Header';
+import React from 'react';
+import styled from 'styled-components';
 
-const commonFields = [
-    { controlId: "firstName", label: "FirstName", type: "text" },
-    { controlId: "lastName", label: "LastName", type: "text" },
-    { controlId: "username", label: "UserName", type: "text" },
-    { controlId: "email", label: "Email", type: "email" },
-    { controlId: "password", label: "Password", type: "password" },
-];
+const AboutContainer = styled.div`
+  background-color: #f7f7f7;
+  padding: 40px 0;
+  text-align: center;
+`;
 
-const Registration = () => {
-    const [formData, setFormData] = useState({
-        firstName:'',
-        lastName:'',
-        username:'',
-        email: '',
-        password: '',
-    });
+const Heading = styled.h2`
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+`;
 
-    const navigate = useNavigate()
+const Paragraph = styled.p`
+  font-size: 16px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 20px;
+`;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        try {
-            const response = await fetch('http://localhost:5100/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-    
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Registration successful:', data);
-                navigate('/login');
-                alert('Registration successful')
-
-            } else {
-                const errorData = await response.json();
-                alert('Registration failed: ' + errorData.message);
-            }
-        } catch (error) {
-            console.error('Error during registration:', error);
-            alert('Error during registration');
-        }
-    };
-    
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
-    };
-
+const About = () => {
     return (
-        <div>
-            <Header/>
-            <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh',paddingTop:'10vh' }}>
-            <Card className="shadow p-4" style={{ width: '400px' }}>
-                <Card.Body>
-                    <h2 className="mb-4">Sign Up</h2>
-                    <Form onSubmit={handleSubmit}>
-                        {commonFields.map((field) => (
-                            <Form.Group style={{textAlign:'start',marginBottom:'10px'}} controlId={field.controlId} key={field.controlId}>
-                                <Form.Label>{field.label}</Form.Label>
-                                <Form.Control
-                                    type={field.type}
-                                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                                    name={field.controlId}
-                                    value={formData[field.controlId]}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </Form.Group>
-                        ))}
-                        <Button type="submit" className="btn-primary w-100 mt-3">Sign Up</Button>
-                    </Form>
-                    <p>Already have an account? <Link to="/login">Log In</Link></p>
-                    {/* <div className="w-100 text-center mt-3">
-                        
-                    </div> */}
-                </Card.Body>
-            </Card>
-        </Container>
-        </div>
+        <AboutContainer>
+            <div className='container shadow p-4'>
+                <Heading>About Us</Heading>
+                <Paragraph>
+                    Welcome to GroceryMart - your one-stop destination for fresh and
+                    quality groceries. We are dedicated to providing you with the finest
+                    selection of products to make your shopping experience convenient and
+                    enjoyable.
+                </Paragraph>
+                <Paragraph>
+                    Our journey began in 2005, and since then, we've been committed to
+                    serving our customers with the freshest produce, pantry essentials,
+                    and more. With a passion for quality and customer satisfaction, we
+                    ensure that every item you find on our shelves meets the highest
+                    standards.
+                </Paragraph>
+                <Paragraph>
+                    Whether you're looking for everyday groceries, special ingredients for
+                    your favorite recipes, or unique items for a special occasion, we've
+                    got you covered. Shop with us and experience the joy of quality
+                    groceries at your doorstep.
+                </Paragraph>
+            </div>
+        </AboutContainer>
     );
 };
 
-export default Registration;
+export default About;

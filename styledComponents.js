@@ -1,54 +1,34 @@
 import styled from 'styled-components';
 
-export const ProductContainer = styled.div`
+export const AboutContainer = styled.div`
+  margin: 20px;
+  padding: 20px;
   border: 1px solid #ccc;
-  border-radius: 8px;  
-  padding: 10px;
-  margin-bottom: 15px;
+  border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-export const ProductName = styled.h3`
-  font-size: 18px;
+export const Title = styled.h2`
   color: #333;
-  margin-bottom: 2px;
-  margin-top:10px;
 `;
 
-export const ProductDescription = styled.p`
+export const Paragraph = styled.p`
   color: #555;
   margin-bottom: 10px;
 `;
 
-export const ProductPrice = styled.p`
-  font-weight: bold;
-  color: #22aaff;
+export const List = styled.ul`
+  list-style: disc;
+  margin-left: 20px;
 `;
 
-export const ProductImage = styled.img`
-  max-width: 100%;
-  height: 260px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+export const ListItem = styled.li`
+  margin-bottom: 5px;
 `;
 
-export const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+export const ContactInfo = styled.p`
+  margin-top: 20px;
+  font-style: italic;
 `;
 
-export const Button = styled.button`
-  padding: 8px 16px;
-  background-color: lightgreen;
-  color: white;
-  border: none;
-  // border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: green;
-  }
-`;
